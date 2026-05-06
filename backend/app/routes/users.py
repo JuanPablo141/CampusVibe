@@ -7,8 +7,10 @@ from app.dependencies import get_db_connection
 from app.schemas.user_register import UserRegisterInput
 from app.services.user_register_service import CourseNotFoundError, UserAlreadyExistsError, register_user
 from app.services.user_register_validation import UserRegisterValidationError
+from app.schemas.user_login import UserLoginInput
+from app.services.user_login_service import login_user, InvalidCredentialsError
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/users", tags=["Usuários e Autenticação"])
 
 
 @router.post(
@@ -35,3 +37,25 @@ def register_user_endpoint(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=exc.detail) from exc
 
     return {"message": "usuario cadastrado com sucesso"}
+
+
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    summary="Login de usuário (Autenticação Segura JWT)",
+    responses={
+        401: {"description": "Credenciais inválidas"},
+    },
+)
+def login_user_endpoint(
+    payload: UserLoginInput,
+    connection: Annotated[Connection, Depends(get_db_connection)],
+):
+    try:
+        return login_user(connection, payload)
+    except InvalidCredentialsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail=exc.detail,
+            headers={"WWW-Authenticate": "Bearer"},
+        )
