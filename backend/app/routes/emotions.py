@@ -21,21 +21,44 @@ def seed_emotions(db: Connection = Depends(get_db_connection)):
             "A aula foi excelente, a professora é maravilhosa.",
             "Estou muito feliz e motivado com o curso.",
             "Tudo ótimo, nota dez para o material didático.",
-            "Achei o conteúdo super tranquilo de entender e adorei."
+            "Achei o conteúdo super tranquilo de entender e adorei.",
+            "Finalmente consegui o 10 em Cálculo! Todo o esforço valeu a pena!",
+            "Acabei de receber o e-mail de aprovação para a bolsa de iniciação científica, estou radiante!",
+            "A sensação de entregar o TCC é indescritível, parece que tirei uma tonelada das costas.",
+            "Conheci pessoas incríveis no grupo de estudos hoje e sinto que finalmente encontrei minha turma.",
+            "O professor elogiou meu projeto na frente de todos, nunca me senti tão motivado.",
+            "Sexta-feira, última aula cancelada e a nota da prova foi acima da média. Melhor dia!"
+
         ],
         "Tristeza / Frustração": [
             "Achei a prova muito difícil e fui muito mal.",
             "A aula foi péssima, a professora não ensina bem.",
             "Estou muito frustrado e triste com o curso.",
             "Tudo horrível, odiei o material didático.",
-            "Achei o conteúdo impossível de entender, muito complicado."
+            "Achei o conteúdo impossível de entender, muito complicado.",
+            "Não aguento mais esse semestre, sinto que por mais que eu estude, a nota nunca vem.",
+            "Passei a noite em claro revisando o conteúdo e, na hora da prova, deu um branco total.",
+            "É muito desanimador ver todo mundo conseguindo estágio enquanto eu nem recebo resposta dos currículos.",
+            "O professor ignorou todas as minhas dúvidas e ainda foi sarcástico na frente da sala inteira.",
+            "Minha família coloca muita pressão em cima de mim, mas eu nem sei se é esse curso que eu quero de verdade.",
+            "O portal da faculdade caiu bem na hora de enviar o trabalho final e agora vou ficar com zero."
         ],
         "Neutro": [
             "Achei a prova mais ou menos, na média.",
             "A aula foi normal, a professora deu o conteúdo padrão.",
             "Estou indiferente com o curso, normal.",
             "Material didático regular, sem grandes problemas.",
-            "Achei o conteúdo razoável, nem fácil nem difícil."
+            "Achei o conteúdo razoável, nem fácil nem difícil.",
+            "Hoje tem aula de inglês na faculdade.",
+            "O professor passou um trabalho para a próxima semana.",
+            "Amanhã temos prova de banco de dados.",
+            "Apenas assistindo a aula, sem opiniões fortes.",
+            "Hoje o dia foi padrão, nada de diferente.",
+            "A aula de amanhã será realizada no laboratório do bloco C, a partir das 19 horas.",
+            "O período de renovação de matrícula começa na próxima segunda-feira via portal do aluno","Preciso passar na biblioteca para devolver o livro de anatomia antes que vença o prazo.",
+            "O currículo do curso foi atualizado e agora inclui a disciplina de Inteligência Artificial.",
+            "Vou almoçar no restaurante universitário e depois seguir para a monitoria de física.",
+            "A palestra sobre carreira acadêmica terá duração de duas horas com emissão de certificado."
         ]
     }
     
