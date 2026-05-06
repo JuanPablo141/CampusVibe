@@ -16,9 +16,9 @@ def seed_emotions(db: Connection = Depends(get_db_connection)):
     """
     # Dicionário mapeando a emoção e as palavras/frases que a descrevem
     emotions_keywords = {
-        "Alegria": "excelente profissional, professora maravilhosa, aula muito boa, alegre, feliz, perfeito, gostei muito",
-        "Tristeza / Frustração": "muito difícil, prova complicada, não entendi nada, frustrado, triste, horrível, ruim, péssimo",
-        "Neutro": "aula normal, padrão, ok, regular, sem opinião"
+        "Alegria": "Achei muito fácil, foi excelente e maravilhoso.",
+        "Tristeza / Frustração": "Achei muito difícil, foi péssimo e horrível.",
+        "Neutro": "Achei mais ou menos, foi normal e razoável."
     }
     
     repo = EmotionRepository(db)
