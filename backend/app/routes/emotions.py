@@ -16,17 +16,36 @@ def seed_emotions(db: Connection = Depends(get_db_connection)):
     """
     # Dicionário mapeando a emoção e as palavras/frases que a descrevem
     emotions_keywords = {
-        "Alegria": "Achei muito fácil, foi excelente e maravilhoso.",
-        "Tristeza / Frustração": "Achei muito difícil, foi péssimo e horrível.",
-        "Neutro": "Achei mais ou menos, foi normal e razoável."
+        "Alegria": [
+            "Achei a prova muito fácil e fui muito bem.",
+            "A aula foi excelente, a professora é maravilhosa.",
+            "Estou muito feliz e motivado com o curso.",
+            "Tudo ótimo, nota dez para o material didático.",
+            "Achei o conteúdo super tranquilo de entender e adorei."
+        ],
+        "Tristeza / Frustração": [
+            "Achei a prova muito difícil e fui muito mal.",
+            "A aula foi péssima, a professora não ensina bem.",
+            "Estou muito frustrado e triste com o curso.",
+            "Tudo horrível, odiei o material didático.",
+            "Achei o conteúdo impossível de entender, muito complicado."
+        ],
+        "Neutro": [
+            "Achei a prova mais ou menos, na média.",
+            "A aula foi normal, a professora deu o conteúdo padrão.",
+            "Estou indiferente com o curso, normal.",
+            "Material didático regular, sem grandes problemas.",
+            "Achei o conteúdo razoável, nem fácil nem difícil."
+        ]
     }
     
     repo = EmotionRepository(db)
     results = []
     
-    for nome_emocao, palavras in emotions_keywords.items():
-        vetor = vector_service.generate_embedding(palavras)
-        id_emocao = repo.create_emotion(nome_emocao, vetor)
+    for nome_emocao, frases_array in emotions_keywords.items():
+        # Agora geramos um super-vetor (Centroid) para a emoção baseada em múltiplos exemplos
+        vetor_centroid = vector_service.generate_average_embedding(frases_array)
+        id_emocao = repo.create_emotion(nome_emocao, vetor_centroid)
         results.append({"id": id_emocao, "emocao": nome_emocao})
         
     return {"message": "Emoções âncora geradas e cadastradas com sucesso!", "emocoes": results}
