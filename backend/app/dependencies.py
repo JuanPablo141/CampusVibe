@@ -19,6 +19,9 @@ def get_database_url() -> str:
 
 def get_db_connection() -> Generator[Connection, None, None]:
     connection = psycopg.connect(get_database_url())
+    # Registra suporte a vetores no psycopg
+    import pgvector.psycopg
+    pgvector.psycopg.register_vector(connection)
     try:
         yield connection
         connection.commit()
