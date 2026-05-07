@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro | CampusVibe</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/register.css">
+</head>
+<body>
+    <!-- Fundo de Mapa Fictício com Emoções Reais -->
+    <div class="map-background">
+        <div class="map-grid"></div>
+        <div class="map-pin pin-a glass">😍 Bloco A <br><span>Feliz</span></div>
+        <div class="map-pin pin-b glass">😢 Bloco B <br><span>Desanimado</span></div>
+        <div class="map-pin pin-c glass">😐 Bloco C <br><span>Neutro</span></div>
+        <div class="map-pin pin-d glass">🤩 Bloco D <br><span>Empolgado</span></div>
+    </div>
+
+    <!-- Container de Cadastro (Otimizado e Dimensionado) -->
+    <div class="register-container glass">
+        <div class="register-header">
+            <h2>Criar Conta</h2>
+            <p>Junte-se a rede de sentimentos acadêmicos.</p>
+        </div>
+
+        <form id="registerForm" class="register-form">
+            <!-- Linha 1: Nome e Email alinhados horizontalmente -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Ex: Juan Pablo" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" required placeholder="email@exemplo.com" autocomplete="email">
+                </div>
+            </div>
+
+            <!-- Linha 2: Bloco e Curso (Cascatas) -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="bloco">Selecione seu Bloco</label>
+                    <select id="bloco" name="bloco" required>
+                        <option value="" disabled selected>Selecione um bloco...</option>
+                        <option value="0">Bloco A (Exatas e Tec)</option>
+                        <option value="1">Bloco B (Negócios)</option>
+                        <option value="2">Bloco C (Humanas)</option>
+                        <option value="3">Bloco D (Saúde)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="id_curso">Seu Curso</label>
+                    <select id="id_curso" name="id_curso" required disabled>
+                        <option value="" disabled selected>Primeiro escolha o bloco...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Linha 3: Senhas -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" required placeholder="Mínimo 8 caracteres" minlength="8" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmar_senha">Confirmar Senha</label>
+                    <input type="password" id="confirmar_senha" name="confirmar_senha" required placeholder="Repita a senha" minlength="8" autocomplete="new-password">
+                </div>
+            </div>
+
+            <div id="error-message" class="error-message hidden"></div>
+            <div id="success-message" class="success-message hidden"></div>
+
+            <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Cadastrar</button>
+        </form>
+
+        <div class="register-footer">
+            <p>Já tem uma conta? <a href="login.html">Fazer Login</a></p>
+            <a href="../index.html" class="back-link">← Voltar ao início</a>
+        </div>
+    </div>
+
+    <script src="../js/register.js"></script>
+</body>
+</html>
