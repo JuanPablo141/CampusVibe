@@ -66,56 +66,6 @@
     gap: 1rem;
 }
 
-/* Botões Modernos */
-.btn {
-    padding: 0.6rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    display: inline-block;
-    text-align: center;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
-}
-
-.btn-outline {
-    background: transparent;
-    border: 1px solid var(--text-main);
-    color: var(--text-main);
-}
-
-.btn-outline:hover {
-    background: var(--text-main);
-    color: var(--bg-darker);
-}
-
-.btn-glass {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    backdrop-filter: blur(5px);
-}
-
-.btn-glass:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.btn-large {
-    padding: 1rem 2.5rem;
-    font-size: 1.1rem;
-    border-radius: 12px;
-}
 
 /* Sessão Principal (Hero) */
 .hero {
