@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | CampusVibe</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+    <!-- Fundo de Mapa Fictício (Tema Secundário) -->
+    <div class="map-background">
+        <div class="map-grid"></div>
+        <div class="map-pin pin-a glass">😍 Bloco A <br><span>Feliz</span></div>
+        <div class="map-pin pin-b glass">😢 Bloco B <br><span>Desanimado</span></div>
+        <div class="map-pin pin-c glass">😐 Bloco C <br><span>Neutro</span></div>
+        <div class="map-pin pin-d glass">🤩 Bloco D <br><span>Empolgado</span></div>
+    </div>
+
+    <!-- Container de Login -->
+    <div class="login-container glass">
+        <div class="login-header">
+            <h2>Bem-vindo</h2>
+            <p>Acesse a plataforma para checar a Vibe de hoje.</p>
+        </div>
+
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" required placeholder="email@exemplo.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha de Acesso</label>
+                <input type="password" id="senha" name="senha" required placeholder="Sua senha" autocomplete="current-password">
+            </div>
+
+            <div id="error-message" class="error-message hidden"></div>
+            <div id="success-message" class="success-message hidden"></div>
+
+            <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Entrar</button>
+        </form>
+
+        <div class="login-footer">
+            <p>Ainda não faz parte? <a href="register.html">Cadastre-se</a></p>
+            <a href="../index.html" class="back-link">Voltar ao início</a>
+        </div>
+    </div>
+
+    <script src="../js/login.js"></script>
+</body>
+</html>

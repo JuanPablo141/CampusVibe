@@ -1,0 +1,183 @@
+/* Container Base */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+    position: relative;
+    overflow-y: auto;
+    background-color: var(--bg-darker);
+}
+
+.map-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+}
+
+.map-grid {
+    position: absolute;
+    width: 200vw;
+    height: 200vh;
+    top: -50%;
+    left: -50%;
+    /* Utilizando a cor secundária (rosa) para diferenciar da tela de cadastro que é roxa */
+    background-image: 
+        linear-gradient(rgba(236, 72, 153, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(236, 72, 153, 0.08) 1px, transparent 1px);
+    background-size: 80px 80px;
+    transform: perspective(600px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+    animation: panMap 60s linear infinite reverse; /* Anda na direção contrária do cadastro */
+}
+
+@keyframes panMap {
+    0% { transform: perspective(600px) rotateX(60deg) translateY(0) translateZ(-200px); }
+    100% { transform: perspective(600px) rotateX(60deg) translateY(80px) translateZ(-200px); }
+}
+
+.map-pin {
+    position: absolute;
+    padding: 0.8rem 1.2rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-align: center;
+    border-color: var(--secondary);
+    box-shadow: 0 0 30px rgba(236, 72, 153, 0.15);
+    animation: floatPin 4s infinite ease-in-out alternate;
+}
+
+.map-pin span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    display: block;
+    margin-top: 5px;
+}
+
+.pin-a { top: 25%; left: 15%; animation-delay: 0s; }
+.pin-b { bottom: 20%; right: 15%; animation-delay: -1s; }
+.pin-c { top: 15%; right: 25%; animation-delay: -2s; }
+.pin-d { bottom: 30%; left: 20%; animation-delay: -3s; }
+
+@keyframes floatPin {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-15px); }
+}
+
+/* Formulário de Login Otimizado (Mais estreito que o Cadastro) */
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 2.5rem 2rem;
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    background: rgba(15, 23, 42, 0.85);
+    border-top: 4px solid var(--secondary); /* Linha rosa no topo marcando a identidade */
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-header h2 {
+    font-size: 2rem;
+    color: var(--text-main);
+    margin-bottom: 0.2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--secondary);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
+}
+
+.btn-full {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.8rem;
+    font-size: 1rem;
+    background: linear-gradient(135deg, var(--secondary), var(--primary)); /* Gradiente invertido */
+}
+
+.btn-full:hover {
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+}
+
+.login-footer {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.login-footer a {
+    color: var(--secondary);
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.login-footer a:hover {
+    color: #f472b6;
+}
+
+.back-link {
+    display: block;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted) !important;
+}
+
+.error-message, .success-message {
+    padding: 0.7rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.success-message {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.hidden {
+    display: none;
+}
