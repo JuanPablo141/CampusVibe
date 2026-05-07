@@ -174,6 +174,71 @@
     justify-content: center;
 }
 
+/* Fluxo de Uso do Sistema */
+.flow-section {
+    padding: 5rem 5%;
+    text-align: center;
+    background: linear-gradient(to bottom, transparent, rgba(139, 92, 246, 0.03));
+}
+
+.flow-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.flow-section h2 span {
+    color: var(--primary);
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 4rem;
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 3rem 2rem;
+    position: relative;
+}
+
+.step-card {
+    padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+    position: relative;
+    text-align: center;
+    border-top: 2px solid var(--primary);
+}
+
+.step-number {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 50px;
+    background: var(--bg-darker);
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+}
+
+.step-card h3 {
+    margin-bottom: 1rem;
+    color: var(--text-main);
+}
+
+.step-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
 /* Sobre (Cards) */
 .about-section {
     padding: 5rem 5%;
