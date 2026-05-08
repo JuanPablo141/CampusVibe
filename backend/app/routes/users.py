@@ -59,3 +59,63 @@ def login_user_endpoint(
             detail=exc.detail,
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+from app.dependencies import get_current_user
+from app.schemas.user_profile import UserProfileResponse, UserUpdateProfile, UserUpdatePassword
+from app.services.user_profile_service import get_profile, update_profile, update_password, UserNotFoundError, InvalidCurrentPasswordError
+
+@router.get(
+    "/me",
+    response_model=UserProfileResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Obter dados do perfil do usuário logado",
+)
+def get_me_endpoint(
+    current_user: dict = Depends(get_current_user),
+    connection: Connection = Depends(get_db_connection)
+):
+    try:
+        user_id = int(current_user["sub"])
+        return get_profile(connection, user_id)
+    except UserNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.detail)
+
+
+@router.put(
+    "/me",
+    status_code=status.HTTP_200_OK,
+    summary="Atualizar dados básicos (Nome e Curso) do usuário",
+)
+def update_me_endpoint(
+    payload: UserUpdateProfile,
+    current_user: dict = Depends(get_current_user),
+    connection: Connection = Depends(get_db_connection)
+):
+    try:
+        user_id = int(current_user["sub"])
+        update_profile(connection, user_id, payload)
+        return {"message": "Perfil atualizado com sucesso"}
+    except CourseNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.detail)
+
+
+@router.put(
+    "/me/password",
+    status_code=status.HTTP_200_OK,
+    summary="Atualizar a senha do usuário, exigindo a senha antiga",
+)
+def update_password_endpoint(
+    payload: UserUpdatePassword,
+    current_user: dict = Depends(get_current_user),
+    connection: Connection = Depends(get_db_connection)
+):
+    try:
+        user_id = int(current_user["sub"])
+        update_password(connection, user_id, payload)
+        return {"message": "Senha atualizada com segurança"}
+    except InvalidCurrentPasswordError as exc:
+        # Retorna 401 para senhas erradas
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=exc.detail)
+    except UserNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.detail)
