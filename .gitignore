@@ -12,3 +12,4 @@ backend/.env.local
 backend/.env.*
 !.env.example
 !backend/.env.example
+/scratch
