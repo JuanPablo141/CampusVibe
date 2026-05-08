@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Conta | CampusVibe</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/account.css">
+</head>
+<body>
+    <!-- Background Gradiente do Dashboard -->
+    <nav class="navbar glass">
+        <div class="logo">Campus<span>Vibe</span></div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="btn btn-glass">Voltar ao Menu</a>
+        </div>
+    </nav>
+
+    <main class="account-container">
+        <header class="account-header">
+            <h1>Configurações da Conta</h1>
+            <p>Gerencie seus dados acadêmicos e preferências de segurança.</p>
+        </header>
+
+        <!-- Navegação de Abas -->
+        <div class="account-tabs">
+            <button class="tab-btn active" data-target="profile">Perfil Acadêmico</button>
+            <button class="tab-btn" data-target="security">Segurança</button>
+        </div>
+
+        <!-- ABA 1: Perfil -->
+        <section id="profile" class="tab-content active account-panel glass">
+            <h3>Informações Pessoais</h3>
+            <form id="profileForm">
+                
+                <div class="form-group">
+                    <label for="email">E-mail (Chave de Acesso Primária)</label>
+                    <input type="email" id="email" name="email" readonly value="carregando..." title="O e-mail não pode ser alterado por motivos de segurança.">
+                </div>
+
+                <div class="form-group">
+                    <label for="nome">Nome de Exibição</label>
+                    <input type="text" id="nome" name="nome" required autocomplete="name">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bloco">Atualizar Bloco Atual</label>
+                        <select id="bloco" name="bloco" required>
+                            <option value="" disabled selected>Selecione um bloco...</option>
+                            <option value="0">Bloco A (Exatas e Tec)</option>
+                            <option value="1">Bloco B (Negócios)</option>
+                            <option value="2">Bloco C (Humanas)</option>
+                            <option value="3">Bloco D (Saúde)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_curso">Atualizar Curso Atual</label>
+                        <select id="id_curso" name="id_curso" required disabled>
+                            <option value="" disabled selected>Primeiro escolha o bloco...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="profile-error" class="error-message hidden"></div>
+                <div id="profile-success" class="success-message hidden"></div>
+
+                <button type="submit" class="btn btn-primary btn-full">Salvar Alterações de Perfil</button>
+            </form>
+        </section>
+
+        <!-- ABA 2: Segurança -->
+        <section id="security" class="tab-content account-panel glass">
+            <h3>Alteração de Senha</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Para garantir a segurança da sua conta, exigimos que você valide sua senha atual antes de cadastrar uma nova.
+            </p>
+            
+            <form id="securityForm">
+                <div class="form-group">
+                    <label for="current_password">Senha Atual</label>
+                    <input type="password" id="current_password" name="current_password" required autocomplete="current-password" placeholder="Digite sua senha atual">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="new_password">Nova Senha</label>
+                        <input type="password" id="new_password" name="new_password" required minlength="8" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirmar Nova Senha</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required minlength="8" autocomplete="new-password" placeholder="Repita a nova senha">
+                    </div>
+                </div>
+
+                <div id="security-error" class="error-message hidden"></div>
+                <div id="security-success" class="success-message hidden"></div>
+
+                <button type="submit" class="btn btn-primary btn-full">Atualizar Senha</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="../js/account.js"></script>
+</body>
+</html>
