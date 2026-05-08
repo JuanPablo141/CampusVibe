@@ -6,6 +6,7 @@ from app.routes.vectors import router as vectors_router
 from app.routes.emotions import router as emotions_router
 from app.routes.comentarios import router as comentarios_router
 from app.routes.dashboards import router as dashboards_router
+from app.routes.stats import router as stats_router
 
 app = FastAPI(title="API Projeto faculdade", version="0.1.0")
 
@@ -24,6 +25,7 @@ app.include_router(vectors_router)
 app.include_router(emotions_router)
 app.include_router(comentarios_router)
 app.include_router(dashboards_router)
+app.include_router(stats_router)
 
 @app.get("/")
 def root():
