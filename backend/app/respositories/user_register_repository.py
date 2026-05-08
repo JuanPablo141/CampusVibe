@@ -57,3 +57,11 @@ def create_user(
         raise RuntimeError("Failed to create user")
 
     return int(row[0])
+
+def get_all_courses(connection: Connection):
+    """Retorna a lista de todos os cursos e seus blocos"""
+    query = "SELECT id_curso, nome_curso, id_bloco FROM public.curso ORDER BY nome_curso ASC"
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        return [{"id": r[0], "nome": r[1], "id_bloco": r[2]} for r in rows]

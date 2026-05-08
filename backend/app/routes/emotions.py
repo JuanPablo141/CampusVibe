@@ -30,7 +30,7 @@ def seed_emotions(db: Connection = Depends(get_db_connection)):
             "Sexta-feira, última aula cancelada e a nota da prova foi acima da média. Melhor dia!"
 
         ],
-        "Tristeza / Frustração": [
+        "Irritado": [
             "Achei a prova muito difícil e fui muito mal.",
             "A aula foi péssima, a professora não ensina bem.",
             "Estou muito frustrado e triste com o curso.",

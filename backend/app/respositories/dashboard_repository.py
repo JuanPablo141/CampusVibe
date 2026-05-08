@@ -8,26 +8,22 @@ class DashboardRepository:
         """
         Lógica central de desempate solicitada:
         - Alegria == Neutro => Feliz
-        - Tristeza == Neutro => Desanimado
-        - Alegria == Tristeza => Neutro
+        - Irritado == Neutro => Triste
+        - Alegria == Irritado => Neutro
         - Os três iguais (ou outros empates complexos) => Neutro
         """
         if not results:
             return {"emocao_geral": "Sem dados", "quantidade_vencedora": 0}
             
-        # O banco já nos devolve ordenado por DESC, então o primeiro elemento tem o maior número
         max_total = results[0][1]
-        
-        # Pegamos todos que possuem a mesma quantidade vencedora
         empatados = [row[0] for row in results if row[1] == max_total]
         
         if len(empatados) == 1:
             return {"emocao_geral": empatados[0], "quantidade_vencedora": max_total}
             
         empate_set = set(empatados)
-        nome_tristeza = "Tristeza / Frustração"
         
-        # Regra 4: Os três iguais
+        # Regra 4: Os três iguais ou mais
         if len(empate_set) >= 3:
             return {"emocao_geral": "Neutro", "quantidade_vencedora": max_total}
             
@@ -35,15 +31,14 @@ class DashboardRepository:
         if "Alegria" in empate_set and "Neutro" in empate_set:
             return {"emocao_geral": "Feliz", "quantidade_vencedora": max_total}
             
-        # Regra 2: Tristeza == Neutro
-        if nome_tristeza in empate_set and "Neutro" in empate_set:
-            return {"emocao_geral": "Desanimado", "quantidade_vencedora": max_total}
+        # Regra 2: Irritado == Neutro
+        if "Irritado" in empate_set and "Neutro" in empate_set:
+            return {"emocao_geral": "Triste", "quantidade_vencedora": max_total}
             
-        # Regra 3: Alegria == Tristeza
-        if "Alegria" in empate_set and nome_tristeza in empate_set:
+        # Regra 3: Alegria == Irritado
+        if "Alegria" in empate_set and "Irritado" in empate_set:
             return {"emocao_geral": "Neutro", "quantidade_vencedora": max_total}
             
-        # Fallback de segurança para qualquer outro empate
         return {"emocao_geral": "Neutro", "quantidade_vencedora": max_total}
 
     def get_emocao_geral_curso(self, id_curso: int):
