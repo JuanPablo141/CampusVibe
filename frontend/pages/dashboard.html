@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Principal | CampusVibe</title>
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="../css/global.css">
+    <!-- CSS Específico do Dashboard -->
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+    <!-- Navegação de Usuário Logado -->
+    <nav class="navbar glass">
+        <div class="logo">Campus<span>Vibe</span></div>
+        <div class="nav-links">
+            <!-- Saudação Dinâmica (Será preenchida pelo JS depois) -->
+            <span class="user-greeting">Olá, Aluno!</span>
+            <!-- Botão de Logout -->
+            <button class="btn btn-outline" id="logoutBtn">Sair da Conta</button>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal do Menu -->
+    <main class="dashboard-container">
+        
+        <header class="dashboard-header">
+            <h2>Bem vindo. O que deseja fazer?</h2>
+        </header>
+
+        <!-- Grid de Navegação de Features -->
+        <div class="modules-grid">
+            
+            <!-- Feature 1: Comentar (Desabafo) -->
+            <a href="#" class="module-card glass" aria-label="Acessar página de desabafo">
+                <div class="module-icon">💬</div>
+                <h3>Fazer um Comentário</h3>
+                <p>Compartilhe anonimamente como foi sua aula, seu professor ou a dificuldade da prova de hoje. A IA cuidará de entender sua emoção.</p>
+            </a>
+
+            <!-- Feature 2: Mapa dos Blocos -->
+            <a href="#" class="module-card glass" aria-label="Acessar mapa dos blocos">
+                <div class="module-icon">🗺️</div>
+                <h3>Mapa dos Blocos</h3>
+                <p>Navegue pela universidade e veja qual é a emoção predominante de cada bloco neste exato momento.</p>
+            </a>
+
+            <!-- Feature 3: Estatísticas do Curso -->
+            <a href="#" class="module-card glass" aria-label="Acessar estatísticas do curso">
+                <div class="module-icon">📊</div>
+                <h3>Raio-X do Curso</h3>
+                <p>Descubra a saúde mental geral da sua turma. Gráficos em tempo real com base no sentimento de todos os seus colegas.</p>
+            </a>
+
+            <!-- Feature 4: Minha Conta (Placeholder) -->
+            <a href="#" class="module-card glass" aria-label="Acessar configurações da conta">
+                <div class="module-icon">⚙️</div>
+                <h3>Minha Conta</h3>
+                <p>Acesse seu histórico (privado), ajuste o seu curso atual ou configure suas preferências de segurança na plataforma.</p>
+            </a>
+
+        </div>
+
+    </main>
+
+    <!-- Futuramente podemos adicionar o dashboard.js aqui -->
+    <!-- <script src="../js/dashboard.js"></script> -->
+</body>
+</html>
