@@ -3,7 +3,7 @@ from psycopg import Connection
 from typing import Optional
 
 from app.dependencies import get_db_connection, get_current_user
-from app.services.stats_service import get_course_dashboard_data, get_courses_by_block_service
+from app.services.stats_service import get_course_dashboard_data, get_courses_by_block_service, get_blocks_map_data
 
 router = APIRouter(prefix="/stats", tags=["Estatísticas e Dashboard"])
 
@@ -28,3 +28,14 @@ def get_courses_by_block(
     connection: Connection = Depends(get_db_connection)
 ):
     return get_courses_by_block_service(connection, id_bloco)
+
+@router.get("/blocks-map")
+def get_blocks_map(
+    current_user: dict = Depends(get_current_user),
+    connection: Connection = Depends(get_db_connection)
+):
+    """
+    Retorna o resumo visual dos blocos para o mapa do dashboard.
+    A emocao do bloco segue a mesma regra de desempate ja usada em /dashboard/bloco.
+    """
+    return get_blocks_map_data(connection)
