@@ -135,3 +135,89 @@ def get_courses_by_block(connection: Connection, id_bloco: int):
         cursor.execute(query, (id_bloco,))
         rows = cursor.fetchall()
         return [{"id": r[0], "nome": r[1]} for r in rows]
+
+def get_block_emotion_counts(connection: Connection, id_bloco: int):
+    """Retorna a distribuicao de emocoes registrada nos comentarios de um bloco."""
+    query = """
+        SELECT e.nome_emocao, COUNT(c.id_comentario) AS total
+        FROM public.comentario c
+        JOIN public.usuario u ON c.id_usuario = u.id_usuario
+        JOIN public.curso cu ON u.id_curso = cu.id_curso
+        JOIN public.classificacao_emocao ce ON c.id_comentario = ce.id_comentario
+        JOIN public.emocao e ON ce.id_emocao = e.id_emocao
+        WHERE cu.id_bloco = %s
+        GROUP BY e.nome_emocao
+        ORDER BY total DESC, e.nome_emocao ASC
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query, (id_bloco,))
+        rows = cursor.fetchall()
+        return [{"nome": _normalize_emotion_name(r[0]), "total": r[1]} for r in rows]
+
+def get_block_recent_comments(connection: Connection, id_bloco: int, emotion_name: str = None, limit: int = 3):
+    """Busca comentarios recentes do bloco para justificar a emocao exibida no mapa."""
+    query = """
+        SELECT c.texto, e.nome_emocao, c.data_criacao, cu.nome_curso
+        FROM public.comentario c
+        JOIN public.usuario u ON c.id_usuario = u.id_usuario
+        JOIN public.curso cu ON u.id_curso = cu.id_curso
+        JOIN public.classificacao_emocao ce ON c.id_comentario = ce.id_comentario
+        JOIN public.emocao e ON ce.id_emocao = e.id_emocao
+        WHERE cu.id_bloco = %s
+    """
+    params = [id_bloco]
+
+    emotion_filter = _emotion_filter_names(emotion_name)
+    if emotion_filter:
+        query += " AND e.nome_emocao = ANY(%s)"
+        params.append(emotion_filter)
+
+    query += " ORDER BY c.data_criacao DESC LIMIT %s"
+    params.append(limit)
+
+    with connection.cursor(row_factory=dict_row) as cursor:
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        for row in rows:
+            row["nome_emocao"] = _normalize_emotion_name(row["nome_emocao"])
+            row["emoji"] = _emotion_to_emoji(row["nome_emocao"])
+        return rows
+
+def get_block_total_comments(connection: Connection, id_bloco: int):
+    query = """
+        SELECT COUNT(c.id_comentario)
+        FROM public.comentario c
+        JOIN public.usuario u ON c.id_usuario = u.id_usuario
+        JOIN public.curso cu ON u.id_curso = cu.id_curso
+        WHERE cu.id_bloco = %s
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query, (id_bloco,))
+        return cursor.fetchone()[0]
+
+def _normalize_emotion_name(nome_emocao: str):
+    if nome_emocao == "Tristeza / Frustração":
+        return "Irritado"
+    return nome_emocao or "Neutro"
+
+def _emotion_to_emoji(nome_emocao: str):
+    vibe_to_emoji = {
+        "Alegria": "😊",
+        "Feliz": "🙂",
+        "Irritado": "😡",
+        "Triste": "😰",
+        "Neutro": "✨",
+        "Sem dados": "◇"
+    }
+    return vibe_to_emoji.get(nome_emocao, "✨")
+
+def _emotion_filter_names(nome_emocao: str):
+    if not nome_emocao or nome_emocao == "Sem dados":
+        return None
+    if nome_emocao == "Feliz":
+        return ["Alegria", "Neutro"]
+    if nome_emocao == "Triste":
+        return ["Irritado", "Neutro", "Tristeza / Frustração"]
+    if nome_emocao == "Irritado":
+        return ["Irritado", "Tristeza / Frustração"]
+    return [nome_emocao]
