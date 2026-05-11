@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusVibe | Fazer um Comentário</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/dashboard_comment.css">
+</head>
+<body>
+    <nav class="navbar glass">
+        <div class="logo" onclick="window.location.href='dashboard.html'" style="cursor:pointer">Campus<span>Vibe</span></div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="btn btn-glass">Voltar ao Menu</a>
+        </div>
+    </nav>
+
+    <main class="comment-container">
+        <header class="comment-header">
+            <span class="section-kicker">Desabafo Anônimo</span>
+            <h1>Compartilhe sua vibe</h1>
+            <p>Conte como foi sua aula, professor, prova ou o seu dia na faculdade. A IA do CampusVibe vai identificar a emoção do seu texto e somar à vibe do seu curso.</p>
+        </header>
+
+        <section class="comment-card glass">
+            <div class="user-chip" id="user-chip">
+                <span class="user-chip-icon">🎓</span>
+                <div class="user-chip-text">
+                    <span class="user-chip-label">Comentando como</span>
+                    <span class="user-chip-value" id="user-info">Carregando perfil...</span>
+                </div>
+            </div>
+
+            <form id="commentForm" class="comment-form">
+                <label for="comment-text" class="form-label">Seu comentário</label>
+                <textarea
+                    id="comment-text"
+                    name="texto"
+                    rows="7"
+                    minlength="3"
+                    maxlength="1000"
+                    placeholder="Ex: A aula de hoje foi excelente, o professor explicou muito bem o conteúdo da prova..."
+                    required
+                ></textarea>
+
+                <div class="form-meta">
+                    <span class="char-counter" id="char-counter">0 / 1000</span>
+                    <span class="privacy-hint">🔒 Seu nome não é exposto a outros alunos</span>
+                </div>
+
+                <div id="comment-error" class="error-message hidden"></div>
+
+                <button type="submit" class="btn btn-primary btn-large btn-full" id="submitBtn">
+                    Enviar para a IA classificar
+                </button>
+            </form>
+        </section>
+
+        <section class="result-card glass hidden" id="result-card">
+            <div class="result-emoji" id="result-emoji">✨</div>
+            <span class="result-kicker">Emoção identificada</span>
+            <h2 class="result-name" id="result-name">Neutro</h2>
+            <p class="result-description" id="result-description">A IA leu seu texto e classificou a vibe predominante.</p>
+
+            <div class="result-quote">
+                <span class="quote-mark">“</span>
+                <p id="result-text"></p>
+                <span class="quote-mark closing">”</span>
+            </div>
+
+            <div class="result-actions">
+                <button type="button" class="btn btn-glass" id="newCommentBtn">Fazer novo comentário</button>
+                <a class="btn btn-primary" href="course_stats.html">Ver o Raio-X do meu curso</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/dashboard_comment.js"></script>
+</body>
+</html>
