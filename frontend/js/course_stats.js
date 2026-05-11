@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const emojiFiltersContainer = document.getElementById('emoji-filters');
     const courseSelector = document.getElementById('course-selector');
     const blockSelector = document.getElementById('block-selector');
+    const pageParams = new URLSearchParams(window.location.search);
+    const initialBlockId = pageParams.get('block_id');
+    const initialCourseId = pageParams.get('course_id');
 
     let selectedEmoji = 'all';
 
@@ -26,10 +29,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok) throw new Error('Falha ao buscar dados');
             const data = await response.json();
 
-            // Configuração inicial dos seletores baseada nos dados do usuário
+            // Configuração inicial dos seletores
             if (!blockSelector.dataset.initialized) {
-                await initializeSelectors(data);
                 blockSelector.dataset.initialized = 'true';
+                await initializeSelectors(data);
+                // Se viemos com course_id na URL, data já é do curso correto — só atualiza UI
+                if (initialCourseId) {
+                    updateMetrics(data);
+                    renderEmojiFilters(data.filtros_emoji, emoji);
+                    renderComments(data.comentarios);
+                    return;
+                }
+                // Sem course_id na URL: redireciona se o seletor aponta para curso diferente
+                const selectedCourse = courseSelector.value;
+                if (selectedCourse && String(selectedCourse) !== String(data.id_curso)) {
+                    await fetchData(selectedCourse, selectedEmoji);
+                    return;
+                }
             }
 
             // Atualiza Interface Principal
@@ -54,11 +70,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         if (profileResp.ok) {
             const profile = await profileResp.json();
-            blockSelector.value = profile.id_bloco;
+            const targetBlockId = initialBlockId || profile.id_bloco;
+            const targetCourseId = initialCourseId || profile.id_curso;
+
+            blockSelector.value = targetBlockId;
             
-            // 3. Carrega cursos do bloco do usuário
-            await updateCourseSelectorByBlock(profile.id_bloco, profile.id_curso);
+            // 3. Carrega cursos do bloco escolhido pelo mapa ou do usuário
+            return await updateCourseSelectorByBlock(targetBlockId, targetCourseId);
         }
+        return null;
     }
 
     async function updateCourseSelectorByBlock(blockId, selectedCourseId = null) {
@@ -76,8 +96,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (selectedCourseId !== null && selectedCourseId !== undefined) {
                 courseSelector.value = selectedCourseId;
             }
+            if (!courseSelector.value && courses.length > 0) {
+                courseSelector.value = courses[0].id;
+            }
+
+            return courseSelector.value;
         } catch (error) {
             console.error(error);
+            return null;
         }
     }
 
@@ -155,8 +181,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join("");
     }
 
-    blockSelector.addEventListener('change', (e) => {
-        updateCourseSelectorByBlock(e.target.value);
+    blockSelector.addEventListener('change', async (e) => {
+        const selectedCourse = await updateCourseSelectorByBlock(e.target.value);
+        if (selectedCourse) {
+            selectedEmoji = 'all';
+            fetchData(selectedCourse, selectedEmoji);
+        }
     });
 
     courseSelector.addEventListener('change', (e) => {
@@ -164,6 +194,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         fetchData(e.target.value, selectedEmoji);
     });
 
-    // Início
-    fetchData();
+    // Início — passa initialCourseId direto para evitar double-fetch e exibir o curso correto
+    fetchData(initialCourseId || null);
 });
