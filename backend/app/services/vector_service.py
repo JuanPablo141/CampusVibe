@@ -2,11 +2,14 @@ from fastembed import TextEmbedding
 
 class VectorService:
     def __init__(self):
-        # Inicializa o modelo de IA leve para gerar vetores.
-        # Estamos usando um modelo MULTILÍNGUE que compreende o Português perfeitamente,
-        # gerando vetores de tamanho 384 (compatível com nosso banco).
-        self.model = TextEmbedding(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-    
+        self._model = None
+
+    @property
+    def model(self):
+        if self._model is None:
+            self._model = TextEmbedding(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+        return self._model
+
     def generate_embedding(self, text: str) -> list[float]:
         """
         Recebe um texto e retorna uma lista de floats (o vetor).
