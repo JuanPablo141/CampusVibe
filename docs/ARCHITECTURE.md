@@ -84,22 +84,31 @@ project-root/
 │       │   ├── dashboards.py              # Emoção geral por curso e por bloco
 │       │   └── stats.py                   # Estatísticas completas para as telas visuais
 │       ├── services/
-│       │   ├── vector_service.py          # Singleton do modelo de IA (fastembed)
-│       │   ├── user_register_service.py   # Lógica de negócio do cadastro
-│       │   ├── user_register_validation.py# Validações de campos do cadastro
-│       │   ├── user_login_service.py      # Geração do JWT no login
-│       │   ├── user_profile_service.py    # Lógica de leitura e atualização de perfil
-│       │   ├── stats_service.py           # Agregação de dados para dashboards
-│       │   └── password_hasher.py         # hash_password / verify_password (Argon2)
+│       │   ├── vector_service.py                    # Singleton do modelo de IA (fastembed)
+│       │   ├── emotion_seed_examples.py             # 190 frases de seed (Alegria/Irritado/Neutro)
+│       │   ├── emotion_classification_service.py    # Léxico de polaridade + decisão final pós-KNN
+│       │   ├── user_register_service.py             # Lógica de negócio do cadastro
+│       │   ├── user_register_validation.py          # Validações de campos do cadastro
+│       │   ├── user_login_service.py                # Geração do JWT no login
+│       │   ├── user_profile_service.py              # Lógica de leitura e atualização de perfil
+│       │   ├── stats_service.py                     # Agregação de dados para dashboards
+│       │   └── password_hasher.py                   # hash_password / verify_password (Argon2)
 │       └── respositories/
-│           ├── comentario_repository.py   # INSERT comentário, SELECT emoções por curso
-│           ├── emotion_repository.py      # INSERT emoção âncora, classificação vetorial
-│           ├── vector_repository.py       # INSERT embedding, busca semântica (cosseno)
-│           ├── dashboard_repository.py    # Cálculo de moda + regras de desempate
-│           ├── stats_repository.py        # Queries para distribuição, cursos, comentários por bloco
-│           ├── user_login_repository.py   # SELECT usuário por email (login)
-│           ├── user_register_repository.py# INSERT usuário, verificações de email/curso
-│           └── user_profile_repository.py # SELECT/UPDATE perfil do usuário
+│           ├── comentario_repository.py             # INSERT comentário, SELECT emoções por curso
+│           ├── emotion_repository.py                # KNN com voto ponderado + helpers de seed
+│           ├── vector_repository.py                 # INSERT embedding, busca semântica (cosseno)
+│           ├── dashboard_repository.py              # Cálculo de moda + regras de desempate
+│           ├── stats_repository.py                  # Queries para distribuição, cursos, comentários por bloco
+│           ├── user_login_repository.py             # SELECT usuário por email (login)
+│           ├── user_register_repository.py          # INSERT usuário, verificações de email/curso
+│           └── user_profile_repository.py           # SELECT/UPDATE perfil do usuário
+├── database/
+│   └── schema/
+│       ├── 001_initial_schema_v1.sql                # Tabelas iniciais (bloco, curso, usuario, comentario)
+│       ├── 002_vector_schema.sql                    # pgvector + tabela embedding + índice HNSW
+│       ├── 003_emotions_schema.sql                  # Tabelas emocao + classificacao_emocao
+│       ├── 004_seed_blocos_cursos.sql               # Seed de blocos e cursos
+│       └── 005_emocao_exemplo.sql                   # Tabela emocao_exemplo (KNN) + vetor_ancora nullable
 └── frontend/
     ├── index.html                         # Landing page (pública)
     ├── pages/
@@ -167,7 +176,15 @@ embedding
 emocao
 ├── id_emocao      PK
 ├── nome_emocao    UNIQUE
-└── vetor_ancora   vector(384)   ← centroid das frases âncora
+└── vetor_ancora   vector(384) NULL   ← legado (centroide); o KNN consulta emocao_exemplo
+
+emocao_exemplo                          ← migração 005 (substitui o centroide por KNN)
+├── id_exemplo     PK
+├── id_emocao      FK → emocao
+├── texto          TEXT                 ← frase de referência (ex: "Péssima aula.")
+├── vetor          vector(384)          ← embedding individual da frase
+└── data_criacao   TIMESTAMPTZ
+    + índice HNSW (vector_cosine_ops) para busca KNN rápida
 
 classificacao_emocao
 ├── id_classificacao  PK
@@ -185,6 +202,9 @@ bloco (4 blocos físicos do campus)
            └── comentario  (N comentários por aluno)
                 ├── embedding  (1 vetor por comentário)
                 └── classificacao_emocao  (1 emoção por comentário)
+
+emocao (3 emoções base: Alegria, Irritado, Neutro)
+ └── emocao_exemplo  (N frases de referência por emoção — ~190 no total)
 ```
 
 ### Blocos e cursos cadastrados
@@ -259,7 +279,7 @@ Usado para verificar se a API está respondendo.
 
 | Endpoint | Método | Auth | Descrição |
 |---|---|---|---|
-| `/comentarios/` | POST | **Sim** | Pipeline completa: salva comentário → gera vetor (IA) → salva vetor → classifica emoção. O `id_usuario` é extraído do JWT — o body recebe apenas `{ texto }`. Retorna a emoção identificada. |
+| `/comentarios/` | POST | **Sim** | Pipeline completa: salva comentário → gera vetor (IA) → salva vetor → classifica via KNN → aplica léxico de polaridade → persiste decisão final. O `id_usuario` é extraído do JWT — o body recebe apenas `{ texto }`. Retorna a emoção identificada + `debug` com top do KNN, margem e se houve override do léxico. |
 | `/comentarios/curso/{id_curso}/emocoes` | GET | Não | Retorna contagem de cada emoção registrada nos comentários de um curso. |
 
 ---
@@ -268,8 +288,8 @@ Usado para verificar se a API está respondendo.
 
 | Endpoint | Método | Descrição |
 |---|---|---|
-| `/emotions/seed` | POST | Inicialização única do sistema. Cadastra as emoções âncora (Alegria, Irritado, Neutro) gerando o vetor centroid de cada uma a partir de múltiplas frases de exemplo. Deve ser executado uma única vez na configuração inicial. |
-| `/emotions/classify` | POST | Reclassifica um comentário específico pelo ID. |
+| `/emotions/seed` | POST | **Idempotente.** Limpa `emocao_exemplo` e re-popula com 190 frases (Alegria: 57, Irritado: 69, Neutro: 64). Cada frase é embutida individualmente — não há mais centroide. Deve ser rodado uma vez após cada deploy que altere o seed. |
+| `/emotions/classify` | POST | Reclassifica um comentário existente via KNN puro (sem aplicar o léxico). Útil para reprocessar comentários antigos ou debugar a IA. |
 
 ---
 
@@ -305,11 +325,24 @@ Esses endpoints usam diretamente o `DashboardRepository` com as regras de desemp
 
 Contêm a lógica de negócio, orquestrando chamadas aos repositórios.
 
-**`vector_service.py`** — Singleton que carrega o modelo `paraphrase-multilingual-MiniLM-L12-v2` via fastembed. Exponibiliza dois métodos:
+**`vector_service.py`** — Singleton que carrega o modelo `paraphrase-multilingual-MiniLM-L12-v2` via fastembed (lazy-load para evitar timeout de boot no Railway). Exponibiliza três métodos:
 - `generate_embedding(text)`: converte um texto em vetor de 384 dimensões
-- `generate_average_embedding(texts)`: gera o centroid normalizado de uma lista de textos (usado no seed de emoções)
+- `generate_embeddings_batch(texts)`: gera o vetor individual de cada frase de uma lista (usado pelo seed do KNN — uma única chamada ao modelo para todos os exemplos)
+- `generate_average_embedding(texts)`: gera o centroid normalizado de uma lista de textos (legado — mantido para compatibilidade)
 
-O modelo é carregado uma única vez na inicialização da aplicação (`vector_service = VectorService()`) para não ocupar memória múltiplas vezes.
+O modelo é carregado uma única vez na primeira chamada (`vector_service = VectorService()` cria a instância, mas só baixa/aloca o modelo ao acessar `model`).
+
+**`emotion_seed_examples.py`** — Banco de 190 frases organizadas por emoção, com mix proposital de tamanhos:
+- **Frases curtas** ("Péssima aula.", "Ótima aula.") para que o KNN acerte inputs de 2-3 palavras.
+- **Frases médias e longas** para cobrir o contexto cheio dos comentários reais.
+- **Vocabulário emocional redundante** (péssimo / horrível / ruim / chato) para reforçar o sinal no espaço vetorial.
+- **Neutros com vocabulário ambíguo** ("Hoje tem aula de cálculo.", "Professor passou um exercício.") para que o KNN não confunda enunciados informativos com elogios.
+
+**`emotion_classification_service.py`** — Léxico de polaridade que decide a emoção final após o KNN. Mantém duas listas:
+- `NEGATIVE_LEXICON`: ~70 palavras de polaridade negativa clara (péssimo, horrível, odeio, estressado, decepção, reprovei, etc.)
+- `POSITIVE_LEXICON`: ~50 palavras de polaridade positiva clara (ótimo, adorei, amei, incrível, passei, tirei 10, etc.)
+
+Função central: `decide_final_emotion(texto, knn_result)` aplica 4 regras em ordem (ver seção [Pipeline de IA](#6-pipeline-de-ia)). O léxico não substitui o KNN — apenas corrige os casos onde o modelo de embeddings tropeça no vocabulário acadêmico.
 
 **`user_login_service.py`** — Verifica email + senha (Argon2), gera JWT com payload `{sub, nome, id_curso, exp}`.
 
@@ -330,11 +363,36 @@ Camada exclusiva de acesso ao banco de dados. Nenhum repositório contém lógic
 - `get_emocao_geral_curso(id_curso)`: calcula a moda das emoções dos comentários de um curso e aplica o desempate
 - `get_emocao_geral_bloco(id_bloco)`: itera sobre cada curso do bloco, chama `get_emocao_geral_curso` para cada um, e aplica o desempate novamente no nível do bloco
 
-**`emotion_repository.py`** — Salva as emoções âncora com seus vetores. O método `classify_comment` faz toda a classificação dentro de uma única query SQL usando pgvector:
+**`emotion_repository.py`** — Gerencia a tabela `emocao` (3 categorias) e `emocao_exemplo` (banco KNN). Métodos:
+
+- **`upsert_emotion(nome)`** — Garante que a emoção exista. Não exige mais `vetor_ancora`.
+- **`reset_examples()`** — Limpa todos os exemplos (chamado pelo `/emotions/seed` antes de re-popular).
+- **`bulk_add_examples(id_emocao, [(texto, vetor), ...])`** — Insere vários exemplos em uma transação via `executemany`.
+- **`get_emotion_id_by_name(nome)`** — Resolve o ID de uma emoção pelo nome (usado quando o léxico sobrescreve o KNN).
+- **`save_classification(id_comentario, id_emocao, distancia)`** — Persiste a decisão final em `classificacao_emocao` com `ON CONFLICT DO UPDATE`.
+- **`classify_comment(id_comentario)`** — Coração do classificador. Faz KNN com voto ponderado em uma única query:
+
 ```sql
-emocao.vetor_ancora <=> embedding.vetor  -- operador de distância de cosseno
+WITH knn AS (
+    SELECT ex.id_emocao, em.nome_emocao,
+           (ex.vetor <=> e.vetor) AS distancia
+    FROM public.embedding e
+    CROSS JOIN public.emocao_exemplo ex
+    JOIN public.emocao em ON em.id_emocao = ex.id_emocao
+    WHERE e.id_comentario = $1
+    ORDER BY distancia ASC LIMIT 7
+),
+scored AS (
+    SELECT id_emocao, nome_emocao,
+           SUM(1.0 / (distancia + 0.05)) AS score,
+           AVG(distancia) AS distancia_media,
+           MIN(distancia) AS distancia_min
+    FROM knn GROUP BY id_emocao, nome_emocao
+)
+SELECT * FROM scored ORDER BY score DESC;
 ```
-Encontra a emoção mais próxima e já insere o resultado em `classificacao_emocao`.
+
+Retorna a emoção vencedora + `margem` (diferença relativa entre 1º e 2º colocados) + `distancia_min` (vizinho mais próximo) + `ranking` completo. Esses metadados alimentam o léxico de polaridade.
 
 **`vector_repository.py`** — Persiste embeddings na tabela `embedding`. Implementa a busca semântica via `<=>` (cosseno) com `ORDER BY distancia ASC`.
 
@@ -349,43 +407,92 @@ Encontra a emoção mais próxima e já insere o resultado em `classificacao_emo
 
 ## 6. Pipeline de IA
 
-Este é o entregável central do projeto. O fluxo completo é executado a cada chamada ao `POST /comentarios/`:
+Este é o entregável central do projeto. A classificação combina três camadas: **embedding semântico**, **KNN com voto ponderado** e **léxico de polaridade**. Cada uma cobre o ponto cego da anterior.
+
+### 6.1 Por que três camadas?
+
+A versão anterior usava um único **centroide por emoção** (média de ~15 frases) e comparava o embedding do texto contra esses 3 vetores. O problema: a média dilui o sinal emocional e o modelo `paraphrase-multilingual-MiniLM` é treinado para similaridade temática, não para sentimento. Resultado: "péssima aula" caía em Neutro porque o vocabulário acadêmico ("aula") puxava o embedding para o centroide do Neutro.
+
+A nova arquitetura ataca o problema em duas frentes:
+1. **KNN substitui o centroide** — cada frase de seed entra como seu próprio vetor, preservando a variância e funcionando bem para frases curtas.
+2. **Léxico atua como rede de segurança** — quando o modelo de embeddings tropeça em palavras emocionais óbvias, o léxico corrige.
+
+### 6.2 Fluxo completo de `POST /comentarios/`
 
 ```
-1. Recebe { id_usuario, texto }
+1. Recebe { texto } + JWT
         ↓
-2. INSERT em comentario → retorna id_comentario
+2. id_usuario = int(jwt["sub"])
         ↓
-3. vector_service.generate_embedding(texto)
+3. INSERT em comentario → id_comentario
+        ↓
+4. vector_service.generate_embedding(texto)
    Modelo: paraphrase-multilingual-MiniLM-L12-v2
-   Output: list[float] com 384 dimensões
+   Output: list[float] de 384 dimensões
         ↓
-4. INSERT em embedding (id_comentario, vetor)
+5. INSERT em embedding (id_comentario, vetor)
         ↓
-5. emotion_repository.classify_comment(id_comentario)
-   Query SQL com pgvector:
-   SELECT emocao, (vetor_ancora <=> vetor_comentario) AS distancia
-   FROM emocao CROSS JOIN embedding
-   WHERE embedding.id_comentario = ?
-   ORDER BY distancia ASC LIMIT 1
+6. emotion_repository.classify_comment(id_comentario)   ← KNN com voto ponderado
         ↓
-6. INSERT em classificacao_emocao (id_comentario, id_emocao, distancia)
+7. emotion_classification_service.decide_final_emotion(texto, knn_result)
         ↓
-7. Retorna { emocao_identificada, distancia, ... }
+8. emo_repo.save_classification(id_comentario, id_emocao_final, distancia)
+        ↓
+9. Retorna { emocao_identificada, debug: { knn_top, knn_margem, override_aplicado, motivo } }
 ```
 
-### Inicialização das emoções âncora (`POST /emotions/seed`)
+### 6.3 Etapa 6 — KNN com voto ponderado
 
-Antes de qualquer classificação funcionar, este endpoint deve ser executado uma única vez:
+A query SQL pega os **7 vizinhos mais próximos** entre as 190 frases de `emocao_exemplo` (usando distância de cosseno via pgvector) e calcula o score de cada emoção:
 
 ```
-Para cada emoção (Alegria, Irritado, Neutro):
-  1. Lista de 10+ frases de exemplo em português
-  2. generate_average_embedding(frases) → centroid normalizado
-  3. INSERT em emocao (nome_emocao, vetor_ancora)
+score(emocao) = Σ  1 / (distância + 0.05)
+              vizinhos da emocao
 ```
 
-O centroid é normalizado (`/ ||v||`) para que a distância de cosseno funcione corretamente.
+A constante `0.05` evita divisão por zero e suaviza outliers. A emoção com maior score vence. A query também retorna:
+- `distancia_min`: distância do vizinho mais próximo (medida de quão "familiar" o texto é em relação ao seed)
+- `margem`: `(score_top - score_2nd) / score_top` — quão confiante o KNN está
+
+### 6.4 Etapa 7 — Léxico de polaridade
+
+`decide_final_emotion` aplica 4 regras em ordem. A primeira que casar decide:
+
+| # | Condição | Resultado |
+|---|---|---|
+| 0 | `dist_min > 0.30` **E** `margem < 0.50` **E** léxico em silêncio **E** KNN ≠ Neutro | → **Neutro** (texto informativo, nenhum exemplo realmente próximo) |
+| 1 | Texto tem palavras positivas **E** negativas (sinais mistos) | mantém o KNN |
+| 2 | KNN disse **Neutro** mas léxico tem sinal forte unilateral | → emoção do léxico (override) |
+| 3 | Léxico contraria o KNN **E** `margem < 0.10` (KNN indeciso) | → emoção do léxico (override) |
+| – | nenhuma das anteriores | mantém o KNN |
+
+#### Por que esses thresholds?
+
+Medições empíricas no seed:
+- Frases emocionalmente claras casam com seed exato → `dist_min < 0.10`
+- Frases neutras informativas → `dist_min ≈ 0.30 – 0.42`
+- KNN confiante → `margem > 0.40`
+- KNN indeciso → `margem < 0.10`
+
+A combinação `dist_min > 0.30 ∧ margem < 0.50` isola os casos onde o KNN "chuta" sem ter exemplos próximos. Se o KNN está confiante (margem alta), respeitamos a decisão dele mesmo com distância maior.
+
+#### Por que o léxico não substitui o KNN?
+
+O KNN cobre frases longas com nuance ("a aula foi confusa mas o professor é atencioso"). O léxico cobre frases curtas com vocabulário direto ("péssima aula"). Cada um falha onde o outro acerta — usar os dois juntos é mais robusto que escolher um.
+
+### 6.5 Inicialização (`POST /emotions/seed`)
+
+Idempotente — pode ser rodado várias vezes sem efeito colateral:
+
+```
+1. upsert_emotion(nome) para cada emoção base (Alegria, Irritado, Neutro)
+2. reset_examples() → DELETE FROM emocao_exemplo
+3. Para cada emoção em emotion_seed_examples.EMOTION_SEED_EXAMPLES:
+     a. vector_service.generate_embeddings_batch(frases)  ← 1 chamada para todas
+     b. bulk_add_examples(id_emocao, [(texto, vetor), ...])
+```
+
+Total de 190 frases inseridas. Tempo na primeira chamada: ~10-20s (carga do modelo + 190 embeddings). Subsequentes: ~3-5s.
 
 ---
 
@@ -613,12 +720,12 @@ Base URL: `http://127.0.0.1:8000`
 | GET | `/users/me` | Sim | Perfil do usuário logado (com id_bloco) |
 | PUT | `/users/me` | Sim | Atualiza nome e curso |
 | PUT | `/users/me/password` | Sim | Troca de senha (exige senha atual) |
-| POST | `/comentarios/` | **Sim** | Pipeline completa: texto → vetor → emoção. `id_usuario` extraído do JWT. |
+| POST | `/comentarios/` | **Sim** | Pipeline completa: texto → vetor → KNN → léxico → emoção. `id_usuario` extraído do JWT. Retorno inclui `debug` com top do KNN, margem e se o léxico fez override. |
 | GET | `/comentarios/curso/{id_curso}/emocoes` | Não* | Contagem de emoções por curso |
 | GET | `/dashboard/curso/{id_curso}` | Não | Emoção geral de um curso |
 | GET | `/dashboard/bloco/{id_bloco}` | Não | Emoção geral de um bloco |
-| POST | `/emotions/seed` | Não | Inicializa emoções âncora (rodar 1x) |
-| POST | `/emotions/classify` | Não | Reclassifica um comentário por ID |
+| POST | `/emotions/seed` | Não | (Re)popula `emocao_exemplo` com 190 frases. Idempotente — rodar após cada deploy que altere o seed. |
+| POST | `/emotions/classify` | Não | Reclassifica um comentário por ID via KNN puro (sem léxico) |
 | POST | `/vectors/comentarios/embed` | Não | Gera e salva embedding de um comentário |
 | POST | `/vectors/search` | Não | Busca semântica por similaridade de texto |
 | GET | `/stats/course` | Sim | Dashboard completo do curso (aceita `?id_curso=X&emoji=Y`) |
@@ -673,10 +780,14 @@ Aluno escreve texto → clica em "Enviar para a IA classificar":
         → create_comentario(texto, id_usuario) → INSERT comentario → id_comentario
         → vector_service.generate_embedding(texto) → list[float] 384 dims
         → VectorRepository.create_embedding(id_comentario, vetor)
-        → EmotionRepository.classify_comment(id_comentario)
-            → SQL: vetor_ancora <=> vetor (cosine distance)
-            → INSERT classificacao_emocao
-        ← { emocao_identificada, id_comentario, texto }
+        → EmotionRepository.classify_comment(id_comentario)   ← KNN ponderado
+            → SQL: top-7 vizinhos em emocao_exemplo (cosseno)
+            → soma 1/(dist+0.05) por emoção, retorna ranking
+        → emotion_classification_service.decide_final_emotion(texto, knn_result)
+            → 4 regras: fallback de Neutro, sinais mistos, override de Neutro, override por margem
+            → retorna { emocao_final, override_aplicado, motivo }
+        → emo_repo.save_classification(id_comentario, id_emocao_final, distancia)
+        ← { emocao_identificada, debug: { knn_top, knn_margem, override_aplicado, motivo } }
     → renderResult(emocao_identificada, texto)
         → applies vibe class (vibe-happy / vibe-sad / vibe-angry / vibe-neutral)
         → shows emoji + nome + descrição + trecho original
@@ -696,9 +807,30 @@ POST /comentarios/ { texto }  — Authorization: Bearer <token>
     → VectorRepository.create_embedding(id_comentario, vetor)
         → INSERT embedding
     → EmotionRepository.classify_comment(id_comentario)
-        → SQL: vetor_ancora <=> vetor (cosine distance)
-        → INSERT classificacao_emocao (id_comentario, id_emocao, distancia)
-    ← { emocao_identificada, id_comentario, texto }
+        → KNN top-7 contra emocao_exemplo
+        → voto ponderado por 1/(distancia + 0.05)
+        → retorna { id_emocao, nome_emocao, score, margem, distancia_min, ranking }
+    → emotion_classification_service.decide_final_emotion(texto, knn_result)
+        → polaridade = detect_polarity(texto)
+        → aplica caso 0 (fallback Neutro), 1 (mistos), 2 (Neutro→polo), 3 (margem baixa)
+        → retorna { emocao_final, override_aplicado, motivo }
+    → emo_repo.save_classification(id_comentario, id_emocao_final, distancia_media)
+        → INSERT/UPDATE classificacao_emocao
+    ← { emocao_identificada, id_comentario, texto, debug }
+```
+
+### Inicialização do classificador KNN
+
+```
+POST /emotions/seed
+    → EmotionRepository.upsert_emotion("Alegria") → id_emocao=1
+    → EmotionRepository.upsert_emotion("Irritado") → id_emocao=2
+    → EmotionRepository.upsert_emotion("Neutro") → id_emocao=3
+    → EmotionRepository.reset_examples() → DELETE FROM emocao_exemplo
+    → Para cada emoção em EMOTION_SEED_EXAMPLES (Alegria 57, Irritado 69, Neutro 64):
+        → vector_service.generate_embeddings_batch(frases)  ← lote único
+        → EmotionRepository.bulk_add_examples(id_emocao, [(texto, vetor), ...])
+    ← { total_exemplos: 190, por_emocao: [...] }
 ```
 
 ### Visualização do Mapa de Blocos
@@ -779,11 +911,13 @@ main.py
 ├── routes/comentarios.py                  (exige get_current_user)
 │   ├── dependencies.py                    (get_current_user → id_usuario do JWT)
 │   ├── services/vector_service.py         (fastembed singleton)
+│   ├── services/emotion_classification_service.py  (léxico + decide_final_emotion)
 │   ├── respositories/comentario_repository.py
 │   ├── respositories/vector_repository.py
-│   └── respositories/emotion_repository.py
+│   └── respositories/emotion_repository.py (KNN com voto ponderado)
 ├── routes/emotions.py
 │   ├── services/vector_service.py
+│   ├── services/emotion_seed_examples.py  (190 frases de seed)
 │   └── respositories/emotion_repository.py
 ├── routes/vectors.py
 │   ├── services/vector_service.py
