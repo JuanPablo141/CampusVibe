@@ -13,7 +13,11 @@ app = FastAPI(title="API Projeto faculdade", version="0.1.0")
 # Libera o acesso para o Frontend (HTML) conversar com o Backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://campusvibe-lovat.vercel.app",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
