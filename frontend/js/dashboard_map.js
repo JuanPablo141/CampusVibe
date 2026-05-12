@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function fetchBlocksMap() {
         try {
             blocksLayer.innerHTML = `<div class="blocks-loading"><span class="blocks-loading-dot"></span>Carregando blocos...</div>`;
-            const response = await fetch('http://127.0.0.1:8000/stats/blocks-map', {
+            const response = await fetch(`${API_BASE_URL}/stats/blocks-map`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 

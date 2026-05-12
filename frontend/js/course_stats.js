@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function fetchData(courseId = null, emoji = 'all') {
         try {
-            let url = `http://127.0.0.1:8000/stats/course`;
+            let url = `${API_BASE_URL}/stats/course`;
             const params = new URLSearchParams();
             if (courseId !== null && courseId !== undefined && courseId !== "") params.append('id_curso', courseId);
             if (emoji && emoji !== 'all') params.append('emoji', emoji);
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             data.lista_blocos.map(b => `<option value="${b.id}">${b.nome}</option>`).join("");
         
         // 2. Busca o perfil do usuário para saber o bloco dele
-        const profileResp = await fetch("http://127.0.0.1:8000/users/me", {
+        const profileResp = await fetch(`${API_BASE_URL}/users/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (profileResp.ok) {
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function updateCourseSelectorByBlock(blockId, selectedCourseId = null) {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/stats/courses-by-block/${blockId}`, {
+            const response = await fetch(`${API_BASE_URL}/stats/courses-by-block/${blockId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error('Erro ao buscar cursos do bloco');

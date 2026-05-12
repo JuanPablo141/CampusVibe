@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadUserProfile() {
         try {
-            const response = await fetch("http://127.0.0.1:8000/users/me", {
+            const response = await fetch(`${API_BASE_URL}/users/me`, {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/users/me", {
+            const response = await fetch(`${API_BASE_URL}/users/me`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.textContent = "Validando criptografia...";
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/users/me/password", {
+            const response = await fetch(`${API_BASE_URL}/users/me/password`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

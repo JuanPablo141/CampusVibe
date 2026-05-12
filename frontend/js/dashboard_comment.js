@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadUserContext() {
         try {
-            const profileResp = await fetch('http://127.0.0.1:8000/users/me', {
+            const profileResp = await fetch(`${API_BASE_URL}/users/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const profile = await profileResp.json();
 
             // Busca cursos do bloco do usuário para descobrir o nome do curso vinculado.
-            const coursesResp = await fetch(`http://127.0.0.1:8000/stats/courses-by-block/${profile.id_bloco}`, {
+            const coursesResp = await fetch(`${API_BASE_URL}/stats/courses-by-block/${profile.id_bloco}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         submitBtn.textContent = 'Classificando emoção...';
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/comentarios/', {
+            const response = await fetch(`${API_BASE_URL}/comentarios/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
