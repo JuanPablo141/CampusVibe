@@ -24,6 +24,7 @@ Plataforma anônima de análise de sentimentos acadêmicos com Inteligência Art
 - [O que o sistema faz](#o-que-o-sistema-faz)
 - [Como a IA classifica emoções](#como-a-ia-classifica-emoções)
 - [Stack tecnológica](#stack-tecnológica)
+- [Endereços de produção](#endereços-de-produção)
 - [Estrutura do repositório](#estrutura-do-repositório)
 - [Como rodar localmente](#como-rodar-localmente)
 - [Como testar a aplicação](#como-testar-a-aplicação)
@@ -170,7 +171,34 @@ Detalhes técnicos completos em [`docs/ARCHITECTURE.md § 6 — Pipeline de IA`]
 
 ---
 
+## Endereços de produção
+
+| Serviço | URL |
+|---------|-----|
+| Frontend (Vercel) | https://campusvibe-lovat.vercel.app/ |
+| Backend (Railway) | https://project-root-production-b179.up.railway.app/ |
+| Swagger interativo da API | https://project-root-production-b179.up.railway.app/docs |
+
+---
+
 ## Estrutura do repositório
+
+```
+project-root/
+├── backend/      → API FastAPI + pipeline de IA  (ver backend/README.md)
+├── database/     → Migrations SQL do PostgreSQL  (ver database/README.md)
+├── docs/         → Documentação técnica          (ver docs/README.md)
+└── frontend/     → Páginas HTML/CSS/JS           (ver frontend/README.md)
+```
+
+Cada subpasta tem seu próprio README com instruções específicas:
+
+- [`backend/README.md`](./backend/README.md) — como rodar a API, variáveis de ambiente, endpoints e pipeline de IA
+- [`database/README.md`](./database/README.md) — ordem das migrations, estrutura das tabelas, seeds
+- [`docs/README.md`](./docs/README.md) — índice da documentação técnica
+- [`frontend/README.md`](./frontend/README.md) — páginas, autenticação, como apontar para o backend
+
+### Visão expandida
 
 ```
 project-root/
@@ -372,8 +400,9 @@ Estudantes de Ciência da Computação da UNINASSAU (campus Graças):
 Para entender em profundidade como cada parte do sistema funciona, consulte:
 
 - **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)** — Documentação completa em 12 seções: estrutura do banco, todas as rotas, pipeline de IA detalhada com fórmulas, regras de desempate, autenticação, fluxos completos por funcionalidade e mapa de conexões entre arquivos.
-
-- **Swagger da API** — Quando rodando localmente: `http://127.0.0.1:8000/docs`.
+- **[`docs/README.md`](docs/README.md)** — Índice de toda a documentação técnica, com roteiros de leitura por objetivo (visão geral, pipeline de IA, banco, fluxos de uso).
+- **READMEs por subpasta** — [`backend/README.md`](./backend/README.md), [`database/README.md`](./database/README.md), [`frontend/README.md`](./frontend/README.md).
+- **Swagger da API** — Em produção: `https://project-root-production-b179.up.railway.app/docs`. Localmente: `http://127.0.0.1:8000/docs`.
 
 ---
 
